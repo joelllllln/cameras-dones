@@ -188,25 +188,25 @@ PRODUCT_SPECS = {
     },
 }
 
-# Max buy prices - adjusted for realistic profit margins with -10% reduction
+# Max buy prices - Conservative pricing increased by 15%
 PRICING_DATA = {
-    'gopro hero 12': {'max_buy': 300.0, 'min_buy': 59.6, 'target': 149.0, 'resell': 360.0, 'min_profit': 100.0},  # Increased for testing
-    'gopro hero 11': {'max_buy': 250.0, 'min_buy': 46.4, 'target': 116.0, 'resell': 290.0, 'min_profit': 80.0},  # Increased for testing
-    'gopro hero 10': {'max_buy': 200.0, 'min_buy': 36.0, 'target': 90.0, 'resell': 235.0, 'min_profit': 70.0},  # Increased for testing
-    'gopro hero 9': {'max_buy': 150.0, 'min_buy': 26.4, 'target': 66.0, 'resell': 175.0, 'min_profit': 60.0},  # Increased for testing
-    'gopro hero 8': {'max_buy': 120.0, 'min_buy': 19.2, 'target': 48.0, 'resell': 135.0, 'min_profit': 50.0},  # Increased for testing
-    'dji mavic 2 pro': {'max_buy': 600.0, 'min_buy': 134.4, 'target': 336.0, 'resell': 820.0, 'min_profit': 250.0},  # Increased for testing
-    'dji air 2s': {'max_buy': 500.0, 'min_buy': 103.6, 'target': 259.0, 'resell': 620.0, 'min_profit': 180.0},  # Increased for testing
-    'dji mini 3 pro': {'max_buy': 400.0, 'min_buy': 86.0, 'target': 215.0, 'resell': 520.0, 'min_profit': 150.0},  # Increased for testing
-    'dji mavic air 2': {'max_buy': 350.0, 'min_buy': 72.8, 'target': 182.0, 'resell': 460.0, 'min_profit': 140.0},  # Increased for testing
-    'dji mini 2': {'max_buy': 250.0, 'min_buy': 50.8, 'target': 127.0, 'resell': 310.0, 'min_profit': 100.0},  # Increased for testing
-    'pioneer ddj-flx10': {'max_buy': 1000.0, 'min_buy': 242.0, 'target': 605.0, 'resell': 1400.0, 'min_profit': 400.0},  # Increased for testing
-    'pioneer ddj-1000': {'max_buy': 800.0, 'min_buy': 156.4, 'target': 391.0, 'resell': 950.0, 'min_profit': 300.0},  # Increased for testing
-    'pioneer ddj-sx3': {'max_buy': 550.0, 'min_buy': 103.6, 'target': 259.0, 'resell': 650.0, 'min_profit': 220.0},  # Increased for testing
-    'pioneer ddj-800': {'max_buy': 450.0, 'min_buy': 86.0, 'target': 215.0, 'resell': 550.0, 'min_profit': 200.0},  # Increased for testing
-    'pioneer ddj-400': {'max_buy': 220.0, 'min_buy': 36.0, 'target': 90.0, 'resell': 250.0, 'min_profit': 100.0},  # Increased for testing
-    'pioneer ddj-sb3': {'max_buy': 200.0, 'min_buy': 33.4, 'target': 83.5, 'resell': 220.0, 'min_profit': 80.0},  # Increased for testing
-    'traktor s4': {'max_buy': 500.0, 'min_buy': 103.6, 'target': 259.0, 'resell': 650.0, 'min_profit': 220.0},  # Increased for testing
+    'gopro hero 12': {'max_buy': 207.0, 'min_buy': 80.0, 'target': 149.0, 'resell': 360.0, 'min_profit': 120.0},
+    'gopro hero 11': {'max_buy': 172.5, 'min_buy': 60.0, 'target': 116.0, 'resell': 290.0, 'min_profit': 100.0},
+    'gopro hero 10': {'max_buy': 138.0, 'min_buy': 50.0, 'target': 90.0, 'resell': 235.0, 'min_profit': 80.0},
+    'gopro hero 9': {'max_buy': 103.5, 'min_buy': 40.0, 'target': 66.0, 'resell': 175.0, 'min_profit': 60.0},
+    'gopro hero 8': {'max_buy': 80.5, 'min_buy': 30.0, 'target': 48.0, 'resell': 135.0, 'min_profit': 50.0},
+    'dji mavic 2 pro': {'max_buy': 460.0, 'min_buy': 150.0, 'target': 336.0, 'resell': 820.0, 'min_profit': 300.0},
+    'dji air 2s': {'max_buy': 402.5, 'min_buy': 120.0, 'target': 259.0, 'resell': 620.0, 'min_profit': 200.0},
+    'dji mini 3 pro': {'max_buy': 322.0, 'min_buy': 100.0, 'target': 215.0, 'resell': 520.0, 'min_profit': 180.0},
+    'dji mavic air 2': {'max_buy': 264.5, 'min_buy': 90.0, 'target': 182.0, 'resell': 460.0, 'min_profit': 160.0},
+    'dji mini 2': {'max_buy': 172.5, 'min_buy': 60.0, 'target': 127.0, 'resell': 310.0, 'min_profit': 120.0},
+    'pioneer ddj-flx10': {'max_buy': 805.0, 'min_buy': 300.0, 'target': 605.0, 'resell': 1400.0, 'min_profit': 500.0},
+    'pioneer ddj-1000': {'max_buy': 575.0, 'min_buy': 200.0, 'target': 391.0, 'resell': 950.0, 'min_profit': 350.0},
+    'pioneer ddj-sx3': {'max_buy': 402.5, 'min_buy': 120.0, 'target': 259.0, 'resell': 650.0, 'min_profit': 250.0},
+    'pioneer ddj-800': {'max_buy': 322.0, 'min_buy': 100.0, 'target': 215.0, 'resell': 550.0, 'min_profit': 220.0},
+    'pioneer ddj-400': {'max_buy': 149.5, 'min_buy': 50.0, 'target': 90.0, 'resell': 250.0, 'min_profit': 100.0},
+    'pioneer ddj-sb3': {'max_buy': 126.5, 'min_buy': 40.0, 'target': 83.5, 'resell': 220.0, 'min_profit': 90.0},
+    'traktor s4': {'max_buy': 379.5, 'min_buy': 120.0, 'target': 259.0, 'resell': 650.0, 'min_profit': 250.0},
 }
 
 # MARKET DATA - Real resale values from Vinted/Gumtree
