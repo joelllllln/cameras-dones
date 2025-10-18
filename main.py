@@ -359,11 +359,12 @@ def strict_product_match(title: str, product_key: str):
         logger.debug(f"      ❌ Title too short ({len(title)} chars)")
         return False, "Title too short"
     
-    # Keyword match
+    # Keyword match - check if ANY keyword appears in title
     keyword_match = False
     matched_keyword = None
     for keyword in spec['keywords']:
-        if keyword.lower() in title_lower:
+        # Check if keyword appears anywhere in title (more flexible)
+        if keyword.lower() in title_lower or all(word in title_lower for word in keyword.lower().split()):
             keyword_match = True
             matched_keyword = keyword
             break
@@ -914,8 +915,32 @@ async def track_vinted_items():
                 logger.info(f"⏰ Last Checked: {last_checked}")
             logger.info("")
             
+            # Use broader search terms for better API results
+            # Map product key to simpler search term
+            search_term_map = {
+                'gopro hero 12': 'gopro 12',
+                'gopro hero 11': 'gopro 11',
+                'gopro hero 10': 'gopro 10',
+                'gopro hero 9': 'gopro 9',
+                'gopro hero 8': 'gopro 8',
+                'dji mavic 2 pro': 'mavic 2 pro',
+                'dji air 2s': 'air 2s',
+                'dji mini 3 pro': 'mini 3 pro',
+                'dji mavic air 2': 'mavic air 2',
+                'dji mini 2': 'dji mini 2',
+                'pioneer ddj-flx10': 'ddj flx10',
+                'pioneer ddj-1000': 'ddj 1000',
+                'pioneer ddj-sx3': 'ddj sx3',
+                'pioneer ddj-800': 'ddj 800',
+                'pioneer ddj-400': 'ddj 400',
+                'pioneer ddj-sb3': 'ddj sb3',
+                'traktor s4': 'traktor s4',
+            }
+            
+            api_search_term = search_term_map.get(search_text, search_text)
+            
             params = {
-                'search_text': search_text,
+                'search_text': api_search_term,
                 'price_to': max_price,
                 'price_from': min_price,
                 'catalog_ids': '1591',  # Electronics category on Vinted UK
