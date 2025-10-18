@@ -96,95 +96,95 @@ CRITICAL_EXCLUSIONS_DESCRIPTION = [
 ]
 
 PRODUCT_SPECS = {
-    # GoPro Cameras
+    # GoPro Cameras - ALL possible variations
     'gopro hero 12': {
-        'keywords': ['hero 12', 'hero12', 'hero 12 black'],
-        'exclude': ['hero 11', 'hero 10', 'hero 9', 'hero 8', 'hero 7', 'case', 'mount', 'battery'],
-        'must_contain': ['gopro', 'hero']
+        'keywords': ['hero 12', 'hero12', '12 black', 'gopro 12', '12 gopro', 'hero 12 black', '12 hero', 'go pro 12'],
+        'exclude': ['hero 11', 'hero 10', 'hero 9', 'hero 8', 'hero 7', '11', '10 ', '9 ', '8 ', '7 ', 'case', 'mount', 'battery', 'accessory'],
+        'must_contain': ['12']
     },
     'gopro hero 11': {
-        'keywords': ['hero 11', 'hero11', 'hero 11 black'],
-        'exclude': ['hero 12', 'hero 10', 'hero 9', 'hero 8', 'hero 7', 'case', 'mount', 'battery'],
-        'must_contain': ['gopro', 'hero']
+        'keywords': ['hero 11', 'hero11', '11 black', 'gopro 11', '11 gopro', 'hero 11 black', '11 hero', 'go pro 11'],
+        'exclude': ['hero 12', 'hero 10', 'hero 9', 'hero 8', 'hero 7', '12', '10 ', '9 ', '8 ', '7 ', 'case', 'mount', 'battery', 'accessory'],
+        'must_contain': ['11']
     },
     'gopro hero 10': {
-        'keywords': ['hero 10', 'hero10', 'hero 10 black'],
-        'exclude': ['hero 12', 'hero 11', 'hero 9', 'hero 8', 'hero 7', 'case', 'mount', 'battery'],
-        'must_contain': ['gopro', 'hero']
+        'keywords': ['hero 10', 'hero10', '10 black', 'gopro 10', '10 gopro', 'hero 10 black', '10 hero', 'go pro 10'],
+        'exclude': ['hero 12', 'hero 11', 'hero 9', 'hero 8', 'hero 7', '12', '11', '9 ', '8 ', '7 ', 'case', 'mount', 'battery', 'accessory'],
+        'must_contain': ['10']
     },
     'gopro hero 9': {
-        'keywords': ['hero 9', 'hero9', 'hero 9 black'],
-        'exclude': ['hero 12', 'hero 11', 'hero 10', 'hero 8', 'hero 7', 'case', 'mount', 'battery'],
-        'must_contain': ['gopro', 'hero']
+        'keywords': ['hero 9', 'hero9', '9 black', 'gopro 9', '9 gopro', 'hero 9 black', '9 hero', 'go pro 9'],
+        'exclude': ['hero 12', 'hero 11', 'hero 10', 'hero 8', 'hero 7', '12', '11', '10 ', '8 ', '7 ', 'case', 'mount', 'battery', 'accessory'],
+        'must_contain': ['9']
     },
     'gopro hero 8': {
-        'keywords': ['hero 8', 'hero8', 'hero 8 black'],
-        'exclude': ['hero 12', 'hero 11', 'hero 10', 'hero 9', 'hero 7', 'case', 'mount', 'battery'],
-        'must_contain': ['gopro', 'hero']
+        'keywords': ['hero 8', 'hero8', '8 black', 'gopro 8', '8 gopro', 'hero 8 black', '8 hero', 'go pro 8'],
+        'exclude': ['hero 12', 'hero 11', 'hero 10', 'hero 9', 'hero 7', '12', '11', '10 ', '9 ', '7 ', 'case', 'mount', 'battery', 'accessory'],
+        'must_contain': ['8']
     },
     
-    # DJI Drones
+    # DJI Drones - ALL possible variations
     'dji mavic 2 pro': {
-        'keywords': ['mavic 2 pro', 'mavic2 pro'],
-        'exclude': ['mini', 'air', 'case', 'bag', 'mavic 3', 'mavic pro'],
-        'must_contain': ['dji', 'mavic']
+        'keywords': ['mavic 2 pro', 'mavic2 pro', 'mavic 2pro', '2 pro drone', 'dji 2 pro', 'mavic pro 2', 'mavic2pro'],
+        'exclude': ['mini', 'air ', 'case', 'bag', 'mavic 3', 'mavic pro platinum', 'battery', 'propeller', 'mavic air'],
+        'must_contain': ['mavic', '2', 'pro']
     },
     'dji air 2s': {
-        'keywords': ['air 2s', 'air2s'],
-        'exclude': ['mini', 'mavic', 'case', 'bag', 'air 2', 'air 3'],
-        'must_contain': ['dji', 'air']
+        'keywords': ['air 2s', 'air2s', 'air 2 s', 'dji 2s', '2s drone', 'air2 s', 'mavic air 2s'],
+        'exclude': ['mini', 'mavic air 2', 'case', 'bag', 'air 3', 'battery', 'propeller', 'air 2 '],
+        'must_contain': ['air', '2s']
     },
     'dji mini 3 pro': {
-        'keywords': ['mini 3 pro', 'mini3 pro'],
-        'exclude': ['mini 2', 'mini 4', 'case', 'bag', 'mini se'],
-        'must_contain': ['dji', 'mini']
+        'keywords': ['mini 3 pro', 'mini3 pro', 'mini 3pro', 'mini3pro', 'dji mini 3', '3 pro drone', 'mini pro 3'],
+        'exclude': ['mini 2', 'mini 4', 'case', 'bag', 'mini se', 'battery', 'propeller', 'mini 3 '],
+        'must_contain': ['mini', '3', 'pro']
     },
     'dji mavic air 2': {
-        'keywords': ['mavic air 2', 'mavic air2'],
-        'exclude': ['mini', 'case', 'bag', 'air 2s', 'mavic 3'],
-        'must_contain': ['dji', 'mavic', 'air']
+        'keywords': ['mavic air 2', 'mavic air2', 'air 2 drone', 'mavic 2 air', 'dji air 2', 'mavicair2', 'mavic air 2 '],
+        'exclude': ['mini', 'case', 'bag', 'air 2s', 'mavic 3', 'battery', 'propeller', '2s'],
+        'must_contain': ['mavic', 'air', '2']
     },
     'dji mini 2': {
-        'keywords': ['mini 2', 'mini2'],
-        'exclude': ['mini 3', 'mini 4', 'case', 'bag', 'mini se', 'mini pro'],
-        'must_contain': ['dji', 'mini']
+        'keywords': ['mini 2', 'mini2', 'dji mini 2', 'mini 2 drone', 'mini2 drone', 'dji 2 mini'],
+        'exclude': ['mini 3', 'mini 4', 'case', 'bag', 'mini se', 'mini pro', 'battery', 'propeller', '3 pro'],
+        'must_contain': ['mini', '2']
     },
     
-    # DJ Controllers
+    # DJ Controllers - ALL possible variations
     'pioneer ddj-flx10': {
-        'keywords': ['ddj-flx10', 'ddj flx10', 'flx10', 'flx 10'],
-        'exclude': ['case', 'bag', 'cover', 'flx6', 'flx4'],
-        'must_contain': ['pioneer', 'ddj']
+        'keywords': ['ddj-flx10', 'ddj flx10', 'flx10', 'flx 10', 'ddj flx 10', 'pioneer flx10', 'ddj-flx-10', 'ddjflx10'],
+        'exclude': ['case', 'bag', 'cover', 'flx6', 'flx4', 'flx 6', 'flx 4', 'stand'],
+        'must_contain': ['flx', '10']
     },
     'pioneer ddj-1000': {
-        'keywords': ['ddj-1000', 'ddj 1000'],
-        'exclude': ['ddj-800', 'ddj-400', 'case', 'bag', 'ddj-sx', 'ddj-sz'],
-        'must_contain': ['pioneer', 'ddj']
+        'keywords': ['ddj-1000', 'ddj 1000', 'ddj1000', 'pioneer 1000', 'ddj-1000srt', 'ddj 1000 srt', '1000 controller'],
+        'exclude': ['ddj-800', 'ddj-400', 'case', 'bag', 'ddj-sx', 'ddj-sz', 'stand', '800', '400'],
+        'must_contain': ['ddj', '1000']
     },
     'pioneer ddj-sx3': {
-        'keywords': ['ddj-sx3', 'ddj sx3', 'sx3'],
-        'exclude': ['ddj-sb3', 'case', 'bag', 'sx2', 'sx'],
-        'must_contain': ['pioneer', 'ddj']
+        'keywords': ['ddj-sx3', 'ddj sx3', 'sx3', 'ddj sx 3', 'ddjsx3', 'pioneer sx3', 'ddj-sx-3', 'sx 3 controller'],
+        'exclude': ['ddj-sb3', 'case', 'bag', 'sx2', 'sx ', 'stand', 'sb3', 'sb 3'],
+        'must_contain': ['sx', '3']
     },
     'pioneer ddj-800': {
-        'keywords': ['ddj-800', 'ddj 800'],
-        'exclude': ['ddj-1000', 'ddj-400', 'case', 'bag', 'ddj-sx'],
-        'must_contain': ['pioneer', 'ddj']
+        'keywords': ['ddj-800', 'ddj 800', 'ddj800', 'pioneer 800', 'ddj-800 controller', '800 controller', 'ddj 800 '],
+        'exclude': ['ddj-1000', 'ddj-400', 'case', 'bag', 'ddj-sx', 'stand', '1000', '400'],
+        'must_contain': ['ddj', '800']
     },
     'pioneer ddj-400': {
-        'keywords': ['ddj-400', 'ddj 400'],
-        'exclude': ['ddj-800', 'ddj-1000', 'case', 'bag', 'ddj-200'],
-        'must_contain': ['pioneer', 'ddj']
+        'keywords': ['ddj-400', 'ddj 400', 'ddj400', 'pioneer 400', 'ddj-400 controller', '400 controller', 'ddj 400 '],
+        'exclude': ['ddj-800', 'ddj-1000', 'case', 'bag', 'ddj-200', 'stand', '800', '1000', '200'],
+        'must_contain': ['ddj', '400']
     },
     'pioneer ddj-sb3': {
-        'keywords': ['ddj-sb3', 'ddj sb3', 'sb3'],
-        'exclude': ['ddj-sx3', 'case', 'bag', 'sb2', 'sb'],
-        'must_contain': ['pioneer', 'ddj']
+        'keywords': ['ddj-sb3', 'ddj sb3', 'sb3', 'ddj sb 3', 'ddjsb3', 'pioneer sb3', 'ddj-sb-3', 'sb 3 controller'],
+        'exclude': ['ddj-sx3', 'case', 'bag', 'sb2', 'sb ', 'stand', 'sx3', 'sx 3'],
+        'must_contain': ['sb', '3']
     },
     'traktor s4': {
-        'keywords': ['traktor s4', 'kontrol s4', 's4 mk3', 's4 mk2'],
-        'exclude': ['case', 'bag', 's2', 's3', 's8'],
-        'must_contain': ['traktor']
+        'keywords': ['traktor s4', 'kontrol s4', 's4 mk3', 's4 mk2', 'traktor kontrol s4', 'ni s4', 's4 controller', 's4 mk 3', 's4 mk 2'],
+        'exclude': ['case', 'bag', 's2', 's3', 's8', 'stand', 's 2', 's 3', 's 8'],
+        'must_contain': ['s4']
     },
 }
 
@@ -810,7 +810,7 @@ async def create_filtered_searches():
         conn.close()
         return
     
-    discord_webhook = "https://discordapp.com/api/webhooks/YOUR_WEBHOOK_HERE"
+    discord_webhook = "https://discordapp.com/api/webhooks/1422243737261707382/aoFqRx4rpIaplAGL96W8r19iCLrucHCt7gbdmK2hLzXP9q9QZO3pGJAi9OBqW1Ghunaz"
     
     cursor.execute("SELECT search_text FROM search_queries")
     existing_products = set(row[0] for row in cursor.fetchall())
@@ -917,7 +917,9 @@ async def track_vinted_items():
             params = {
                 'search_text': search_text,
                 'price_to': max_price,
-                'price_from': min_price
+                'price_from': min_price,
+                'catalog_ids': '1591',  # Electronics category on Vinted UK
+                'order': 'newest_first'
             }
             
             # STEP 1: Get all items (price filtered by API)
