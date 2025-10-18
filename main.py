@@ -190,23 +190,23 @@ PRODUCT_SPECS = {
 
 # Max buy prices - adjusted for realistic profit margins with -10% reduction
 PRICING_DATA = {
-    'gopro hero 12': {'max_buy': 223.0, 'min_buy': 59.6, 'target': 149.0, 'resell': 360.0, 'min_profit': 100.0},
-    'gopro hero 11': {'max_buy': 194.0, 'min_buy': 46.4, 'target': 116.0, 'resell': 290.0, 'min_profit': 80.0},
-    'gopro hero 10': {'max_buy': 166.0, 'min_buy': 36.0, 'target': 90.0, 'resell': 235.0, 'min_profit': 70.0},
-    'gopro hero 9': {'max_buy': 122.0, 'min_buy': 26.4, 'target': 66.0, 'resell': 175.0, 'min_profit': 60.0},
-    'gopro hero 8': {'max_buy': 97.0, 'min_buy': 19.2, 'target': 48.0, 'resell': 135.0, 'min_profit': 50.0},
-    'dji mavic 2 pro': {'max_buy': 491.0, 'min_buy': 134.4, 'target': 336.0, 'resell': 820.0, 'min_profit': 250.0},
-    'dji air 2s': {'max_buy': 391.0, 'min_buy': 103.6, 'target': 259.0, 'resell': 620.0, 'min_profit': 180.0},
-    'dji mini 3 pro': {'max_buy': 315.0, 'min_buy': 86.0, 'target': 215.0, 'resell': 520.0, 'min_profit': 150.0},
-    'dji mavic air 2': {'max_buy': 277.0, 'min_buy': 72.8, 'target': 182.0, 'resell': 460.0, 'min_profit': 140.0},
-    'dji mini 2': {'max_buy': 189.0, 'min_buy': 50.8, 'target': 127.0, 'resell': 310.0, 'min_profit': 100.0},
-    'pioneer ddj-flx10': {'max_buy': 819.0, 'min_buy': 242.0, 'target': 605.0, 'resell': 1400.0, 'min_profit': 400.0},
-    'pioneer ddj-1000': {'max_buy': 630.0, 'min_buy': 156.4, 'target': 391.0, 'resell': 950.0, 'min_profit': 300.0},
-    'pioneer ddj-sx3': {'max_buy': 422.0, 'min_buy': 103.6, 'target': 259.0, 'resell': 650.0, 'min_profit': 220.0},
-    'pioneer ddj-800': {'max_buy': 347.0, 'min_buy': 86.0, 'target': 215.0, 'resell': 550.0, 'min_profit': 200.0},
-    'pioneer ddj-400': {'max_buy': 173.0, 'min_buy': 36.0, 'target': 90.0, 'resell': 250.0, 'min_profit': 100.0},
-    'pioneer ddj-sb3': {'max_buy': 151.0, 'min_buy': 33.4, 'target': 83.5, 'resell': 220.0, 'min_profit': 80.0},
-    'traktor s4': {'max_buy': 410.0, 'min_buy': 103.6, 'target': 259.0, 'resell': 650.0, 'min_profit': 220.0},
+    'gopro hero 12': {'max_buy': 300.0, 'min_buy': 59.6, 'target': 149.0, 'resell': 360.0, 'min_profit': 100.0},  # Increased for testing
+    'gopro hero 11': {'max_buy': 250.0, 'min_buy': 46.4, 'target': 116.0, 'resell': 290.0, 'min_profit': 80.0},  # Increased for testing
+    'gopro hero 10': {'max_buy': 200.0, 'min_buy': 36.0, 'target': 90.0, 'resell': 235.0, 'min_profit': 70.0},  # Increased for testing
+    'gopro hero 9': {'max_buy': 150.0, 'min_buy': 26.4, 'target': 66.0, 'resell': 175.0, 'min_profit': 60.0},  # Increased for testing
+    'gopro hero 8': {'max_buy': 120.0, 'min_buy': 19.2, 'target': 48.0, 'resell': 135.0, 'min_profit': 50.0},  # Increased for testing
+    'dji mavic 2 pro': {'max_buy': 600.0, 'min_buy': 134.4, 'target': 336.0, 'resell': 820.0, 'min_profit': 250.0},  # Increased for testing
+    'dji air 2s': {'max_buy': 500.0, 'min_buy': 103.6, 'target': 259.0, 'resell': 620.0, 'min_profit': 180.0},  # Increased for testing
+    'dji mini 3 pro': {'max_buy': 400.0, 'min_buy': 86.0, 'target': 215.0, 'resell': 520.0, 'min_profit': 150.0},  # Increased for testing
+    'dji mavic air 2': {'max_buy': 350.0, 'min_buy': 72.8, 'target': 182.0, 'resell': 460.0, 'min_profit': 140.0},  # Increased for testing
+    'dji mini 2': {'max_buy': 250.0, 'min_buy': 50.8, 'target': 127.0, 'resell': 310.0, 'min_profit': 100.0},  # Increased for testing
+    'pioneer ddj-flx10': {'max_buy': 1000.0, 'min_buy': 242.0, 'target': 605.0, 'resell': 1400.0, 'min_profit': 400.0},  # Increased for testing
+    'pioneer ddj-1000': {'max_buy': 800.0, 'min_buy': 156.4, 'target': 391.0, 'resell': 950.0, 'min_profit': 300.0},  # Increased for testing
+    'pioneer ddj-sx3': {'max_buy': 550.0, 'min_buy': 103.6, 'target': 259.0, 'resell': 650.0, 'min_profit': 220.0},  # Increased for testing
+    'pioneer ddj-800': {'max_buy': 450.0, 'min_buy': 86.0, 'target': 215.0, 'resell': 550.0, 'min_profit': 200.0},  # Increased for testing
+    'pioneer ddj-400': {'max_buy': 220.0, 'min_buy': 36.0, 'target': 90.0, 'resell': 250.0, 'min_profit': 100.0},  # Increased for testing
+    'pioneer ddj-sb3': {'max_buy': 200.0, 'min_buy': 33.4, 'target': 83.5, 'resell': 220.0, 'min_profit': 80.0},  # Increased for testing
+    'traktor s4': {'max_buy': 500.0, 'min_buy': 103.6, 'target': 259.0, 'resell': 650.0, 'min_profit': 220.0},  # Increased for testing
 }
 
 # MARKET DATA - Real resale values from Vinted/Gumtree
@@ -943,12 +943,14 @@ async def track_vinted_items():
                 'search_text': api_search_term,
                 'price_to': max_price,
                 'price_from': min_price,
-                'catalog_ids': '1591',  # Electronics category on Vinted UK
+                # Removed catalog_ids - it's too restrictive, let keyword filtering handle it
                 'order': 'newest_first'
             }
             
             # STEP 1: Get all items (price filtered by API)
             logger.info(f"🔎 STEP 1: Searching Vinted API...")
+            logger.info(f"   🔍 API Search Term: '{api_search_term}' (mapped from '{search_text}')")
+            logger.info(f"   💰 Price Filter: £{min_price} - £{max_price}")
             items = await search_with_pagination(scraper, params)
             cycle_stats['total_items'] += len(items)
             logger.info(f"✅ API returned {len(items)} items\n")
