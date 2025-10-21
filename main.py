@@ -120,33 +120,16 @@ CRITICAL_EXCLUSIONS_DESC = [
     'fly away', 'flyaway', 'lost drone', 'crashed',
 ]
 
-# GOOD INDICATORS in description (bonus points, but not required)
-GOOD_INDICATORS = [
-    'mint', 'perfect', 'pristine', 'excellent', 'like new', 'brand new',
-    'barely used', 'hardly used', 'lightly used',
-    'full working', 'fully working', 'perfect working', 'works perfectly',
-    'original box', 'boxed', 'box included', 'with box',
-    'warranty', 'receipt', 'proof of purchase',
-    'charger included', 'battery included', 'batteries included', 'accessories included',
-    'no scratches', 'scratch free', 'immaculate',
-    'fly more combo', 'combo', 'extra batteries',
-]
-
 # Product specifications with buy prices - ONLY DJI MINI 2 MODELS
 PRODUCT_SPECS = {
     # === DJI MINI 2 DRONES ONLY ===
-    # Use simpler search terms - let filters handle the rest
     'dji mini 2': {
-        'max_buy': 180.0, 
-        'target_list': 350.0, 
-        'min_profit': 120.0,
-        'search_terms': ['dji mini 2']  # Simple, broad search
+        'max_buy': 180.0,
+        'search_terms': ['dji mini 2']
     },
     'dji mini 2 se': {
-        'max_buy': 140.0, 
-        'target_list': 280.0, 
-        'min_profit': 100.0,
-        'search_terms': ['dji mini 2 se']  # Simple, broad search
+        'max_buy': 140.0,
+        'search_terms': ['dji mini 2 se']
     },
 }
 
@@ -164,8 +147,6 @@ def init_database():
             search_term TEXT NOT NULL,
             price_from REAL NOT NULL,
             price_to REAL NOT NULL,
-            target_list_price REAL NOT NULL,
-            min_profit REAL NOT NULL,
             enabled BOOLEAN DEFAULT TRUE,
             last_checked TEXT,
             total_found INTEGER DEFAULT 0,
@@ -186,7 +167,6 @@ def init_database():
             seller_reviews INTEGER,
             passed_title_filter BOOLEAN DEFAULT FALSE,
             passed_desc_filter BOOLEAN DEFAULT FALSE,
-            profit REAL,
             notified_at TEXT NOT NULL,
             FOREIGN KEY (search_query_id) REFERENCES search_queries(id)
         )
@@ -203,29 +183,24 @@ async def create_search_queries():
     
     for product_name, pricing in PRODUCT_SPECS.items():
         max_buy = pricing['max_buy']
-        target_list = pricing['target_list']
-        min_profit = pricing['min_profit']
         
         # Use the first search term as primary
         search_terms = pricing.get('search_terms', [product_name])
         primary_search_term = search_terms[0]
         
-        # Price range: 5% below min profit point to max buy price
-        min_price_threshold = max_buy - min_profit
-        price_from = max(min_price_threshold * 0.95, 1.0)
+        # Price range: £1 to max buy price
+        price_from = 1.0
         price_to = max_buy
         
         cursor.execute("""
             INSERT OR IGNORE INTO search_queries 
-            (name, search_term, price_from, price_to, target_list_price, min_profit, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (name, search_term, price_from, price_to, created_at)
+            VALUES (?, ?, ?, ?, ?)
         """, (
             product_name,
             primary_search_term,
             price_from,
             price_to,
-            target_list,
-            min_profit,
             datetime.utcnow().isoformat()
         ))
     
@@ -272,20 +247,6 @@ def has_critical_exclusion_in_description(description: str) -> Tuple[bool, Optio
         if term in desc_lower:
             return True, term
     return False, None
-
-def calculate_quality_score(description: str) -> int:
-    """Calculate quality score based on good indicators (0-100)"""
-    if not description:
-        return 50  # Neutral score if no description
-    
-    desc_lower = description.lower()
-    score = 50  # Start at neutral
-    
-    for indicator in GOOD_INDICATORS:
-        if indicator in desc_lower:
-            score += 10  # Add 10 points per good indicator
-    
-    return min(score, 100)  # Cap at 100
 
 async def scrape_vinted_description(url: str) -> Tuple[Optional[str], Optional[int]]:
     """Scrape full description and seller review count from Vinted listing page"""
@@ -348,20 +309,6 @@ async def send_discord_notification(item_data: dict):
         return
     
     try:
-        profit = item_data['profit']
-        profit_margin = (profit / item_data['target_list']) * 100
-        
-        # Color based on profit margin
-        if profit_margin >= 40:
-            color = 0x00ff00  # Green - Excellent
-        elif profit_margin >= 25:
-            color = 0xffa500  # Orange - Good
-        else:
-            color = 0xff6b6b  # Red - Acceptable
-        
-        quality_score = item_data.get('quality_score', 50)
-        quality_emoji = "🌟" if quality_score >= 70 else "✅" if quality_score >= 50 else "⚠️"
-        
         seller_reviews = item_data.get('seller_reviews')
         review_emoji = "⭐" if seller_reviews and seller_reviews >= 10 else "👤"
         review_text = f"{seller_reviews} reviews" if seller_reviews else "New seller"
@@ -373,26 +320,11 @@ async def send_discord_notification(item_data: dict):
         embed = {
             "title": f"🚁 {item_data['product_name'].upper()}",
             "description": f"**{item_data['title']}**",
-            "color": color,
+            "color": 0x667eea,
             "fields": [
                 {
-                    "name": "💰 Buy Price",
+                    "name": "💰 Price",
                     "value": f"£{item_data['price']:.2f}",
-                    "inline": True
-                },
-                {
-                    "name": "🎯 Target List",
-                    "value": f"£{item_data['target_list']:.2f}",
-                    "inline": True
-                },
-                {
-                    "name": "💵 Profit",
-                    "value": f"£{profit:.2f} ({profit_margin:.1f}%)",
-                    "inline": True
-                },
-                {
-                    "name": f"{quality_emoji} Quality Score",
-                    "value": f"{quality_score}/100",
                     "inline": True
                 },
                 {
@@ -431,7 +363,7 @@ async def run_scan_cycle():
     cursor = conn.cursor()
     
     cursor.execute("""
-        SELECT id, name, search_term, price_from, price_to, target_list_price, min_profit
+        SELECT id, name, search_term, price_from, price_to
         FROM search_queries
         WHERE enabled = TRUE
         ORDER BY RANDOM()
@@ -467,14 +399,12 @@ async def run_scan_cycle():
         scraper = AsyncVintedScraper(baseurl="https://www.vinted.co.uk")
         
         for idx, query in enumerate(queries, 1):
-            query_id, name, search_term, price_from, price_to, target_list, min_profit = query
+            query_id, name, search_term, price_from, price_to = query
             
             logger.info(f"\n{'─'*60}")
             logger.info(f"🔍 [{idx}/{len(queries)}] {name}")
             logger.info(f"{'─'*60}")
             logger.info(f"   💷 Price range: £{price_from:.2f} - £{price_to:.2f}")
-            logger.info(f"   🎯 Target list: £{target_list:.2f}")
-            logger.info(f"   💰 Min profit: £{min_profit:.2f}")
             logger.info(f"")
             
             all_items = []
@@ -584,13 +514,6 @@ async def run_scan_cycle():
                     logger.info(f"      ✅ Description filter passed")
                     cycle_stats['passed_desc_filter'] += 1
                     
-                    # Step 4: Calculate quality score
-                    quality_score = calculate_quality_score(description)
-                    logger.info(f"      ⭐ Quality score: {quality_score}/100")
-                    
-                    # Calculate profit
-                    profit = target_list - item.price
-                    
                     # Extract photo URL properly
                     photo_url = None
                     if hasattr(item, 'photo'):
@@ -603,8 +526,8 @@ async def run_scan_cycle():
                     cursor.execute("""
                         INSERT INTO tracked_items 
                         (vinted_id, search_query_id, title, price, url, photo_url, description,
-                         seller_reviews, passed_title_filter, passed_desc_filter, profit, notified_at)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                         seller_reviews, passed_title_filter, passed_desc_filter, notified_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         str(item.id),
                         query_id,
@@ -616,7 +539,6 @@ async def run_scan_cycle():
                         review_count,
                         True,
                         True,
-                        profit,
                         datetime.utcnow().isoformat()
                     ))
                     
@@ -626,7 +548,7 @@ async def run_scan_cycle():
                     product_passed += 1
                     cycle_stats['sent_to_discord'] += 1
                     
-                    logger.info(f"      💰 Profit: £{profit:.2f}")
+                    logger.info(f"      💰 Price: £{item.price:.2f}")
                     logger.info(f"      📬 Sending to Discord...")
                     
                     # Extract photo URL for Discord
@@ -642,12 +564,9 @@ async def run_scan_cycle():
                         'product_name': name,
                         'title': item.title,
                         'price': item.price,
-                        'target_list': target_list,
-                        'profit': profit,
                         'url': item.url,
                         'photo_url': photo_url_discord,
                         'description': description,
-                        'quality_score': quality_score,
                         'seller_reviews': review_count
                     })
                     
@@ -746,7 +665,6 @@ async def startup_event():
     logger.info(f"   💰 DJI Mini 2 SE max buy: £140")
     logger.info(f"   ⭐ Min seller reviews: {MIN_SELLER_REVIEWS}")
     logger.info(f"   🔍 Description scraping: ✅ ENABLED")
-    logger.info(f"   ⭐ Quality scoring: ✅ ENABLED")
     logger.info(f"   🔌 Vinted scraper: {'✅ AVAILABLE' if VINTED_AVAILABLE else '❌ NOT INSTALLED'}")
     logger.info(f"="*60 + "\n")
     
@@ -768,9 +686,6 @@ async def home():
     cursor.execute("SELECT COUNT(*) FROM tracked_items WHERE passed_desc_filter = TRUE")
     passed_desc = cursor.fetchone()[0]
     
-    cursor.execute("SELECT SUM(profit) FROM tracked_items")
-    total_profit = cursor.fetchone()[0] or 0
-    
     cursor.execute("""
         SELECT name, COUNT(tracked_items.id) as count
         FROM search_queries
@@ -783,7 +698,7 @@ async def home():
     top_products = cursor.fetchall()
     
     cursor.execute("""
-        SELECT title, price, url, profit, notified_at
+        SELECT title, price, url, notified_at
         FROM tracked_items
         ORDER BY notified_at DESC
         LIMIT 20
@@ -901,10 +816,6 @@ async def home():
                     gap: 20px;
                     flex-wrap: wrap;
                 }}
-                .profit-positive {{ 
-                    color: #00a86b; 
-                    font-weight: bold; 
-                }}
                 a {{ 
                     color: #667eea; 
                     text-decoration: none; 
@@ -946,10 +857,6 @@ async def home():
                         <div class="stat-label">📝 Description Pass</div>
                         <div class="stat-value">{passed_desc}</div>
                     </div>
-                    <div class="stat">
-                        <div class="stat-label">💰 Total Profit Potential</div>
-                        <div class="stat-value">£{total_profit:,.0f}</div>
-                    </div>
                 </div>
                 
                 <div class="section">
@@ -975,12 +882,11 @@ async def home():
                                 <div class="deal-title">{title}</div>
                                 <div class="deal-info">
                                     <span>💰 £{price:.2f}</span>
-                                    <span class="profit-positive">📈 +£{profit:.2f} profit</span>
                                     <span>🕐 {notified_at.split('T')[1][:8]}</span>
                                     <span><a href="{url}" target="_blank">🔗 View Listing</a></span>
                                 </div>
                             </div>
-                        ''' for title, price, url, profit, notified_at in recent_items) if recent_items else '<p style="padding: 20px; text-align: center; color: #999;">No deals yet...</p>'}
+                        ''' for title, price, url, notified_at in recent_items) if recent_items else '<p style="padding: 20px; text-align: center; color: #999;">No deals yet...</p>'}
                     </div>
                 </div>
             </div>
@@ -998,7 +904,6 @@ async def health_check():
         "products_tracked": len(PRODUCT_SPECS),
         "scan_interval": CYCLE_INTERVAL,
         "description_scraping": True,
-        "quality_scoring": True,
         "timestamp": datetime.now().isoformat()
     }
 
