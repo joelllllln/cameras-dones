@@ -77,8 +77,11 @@ CRITICAL_EXCLUSIONS_TITLE = [
     'screen protector', 'protector', 'guard',
     'sticker', 'skin', 'decal', 'wrap',
     'dummy', 'display model', 'display only', 'non working display',
+    'spotlight', 'light', 'lighting',
+    'accessories', 'accessory', 'bundle',
     # Other DJI models to exclude
     'mini 3', 'mini 4', 'mavic', 'air', 'phantom', 'inspire', 'fpv', 'avata',
+    'm2e', 'm30', 'matrice', 'agras', 'spark',
     # Graphics cards & PC parts
     'rtx', 'gtx', 'graphics card', 'gpu', 'nvidia', 'amd', 'radeon',
     'air quality', 'dylos',
