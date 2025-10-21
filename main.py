@@ -135,18 +135,18 @@ GOOD_INDICATORS = [
 # Product specifications with buy prices - ONLY DJI MINI 2 MODELS
 PRODUCT_SPECS = {
     # === DJI MINI 2 DRONES ONLY ===
-    # Use more specific search terms to reduce garbage results
+    # Use simpler search terms - let filters handle the rest
     'dji mini 2': {
         'max_buy': 180.0, 
         'target_list': 350.0, 
         'min_profit': 120.0,
-        'search_terms': ['dji mini 2 drone', 'dji mini2 drone', 'mini 2 drone']  # Multiple search variations
+        'search_terms': ['dji mini 2']  # Simple, broad search
     },
     'dji mini 2 se': {
         'max_buy': 140.0, 
         'target_list': 280.0, 
         'min_profit': 100.0,
-        'search_terms': ['dji mini 2 se', 'dji mini2 se', 'mini 2 se drone']  # Multiple search variations
+        'search_terms': ['dji mini 2 se']  # Simple, broad search
     },
 }
 
