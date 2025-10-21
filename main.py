@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-BOT 3: Camera & DJ Pro - Complete Production Version
+DJI DRONES BOT - DJI Mini 2 & Mini 2 SE Only
 Flow: Price Filter → Title Filter → Green Light → Scrape Description → Quality Check → Discord
 """
 
@@ -36,8 +36,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Camera & DJ Pro Bot")
-DATABASE_FILE = "camera_dj_bot.db"
+app = FastAPI(title="DJI Drones Bot")
+DATABASE_FILE = "dji_drones_bot.db"
 
 # Configuration
 MAX_PAGES_PER_SEARCH = 20
@@ -45,7 +45,7 @@ ITEMS_PER_PAGE = 40
 PAGE_DELAY = 4
 PRODUCT_DELAY = 12
 CYCLE_INTERVAL = 900
-MAX_PRODUCTS_PER_CYCLE = 8
+MAX_PRODUCTS_PER_CYCLE = 2  # Only 2 products now
 RETRY_DELAY = 30
 MAX_RETRIES = 2
 SESSION_RESET_DELAY = 60
@@ -60,18 +60,18 @@ CRITICAL_EXCLUSIONS_TITLE = [
     'bag', 'bag only', 'carry bag', 'storage bag', 'travel bag', 'shoulder bag',
     'mount', 'mount only', 'mounting', 'bracket', 'holder', 'stand',
     'battery', 'battery only', 'batteries', 'charger', 'charger only', 'power adapter',
-    'lens', 'lens only', 'replacement lens', 'lens cover', 'lens cap',
     'cable', 'cable only', 'usb cable', 'power cable', 'connector',
-    'strap', 'neck strap', 'wrist strap', 'camera strap',
+    'strap', 'neck strap', 'wrist strap',
     'manual', 'manual only', 'instructions', 'box', 'box only', 'empty box',
-    'memory card', 'sd card', 'cf card', 'card only',
+    'memory card', 'sd card', 'card only',
     'remote', 'remote control', 'remote only',
-    'tripod', 'monopod', 'gimbal', 'stabilizer',
-    'filter', 'uv filter', 'nd filter', 'polarizing filter',
-    'flash', 'external flash', 'speedlight', 'flash unit',
+    'propeller', 'propellers', 'props', 'blades',
+    'gimbal', 'gimbal only', 'stabilizer',
     'screen protector', 'protector', 'guard',
     'sticker', 'skin', 'decal', 'wrap',
     'dummy', 'display model', 'display only', 'non working display',
+    # Other DJI models to exclude
+    'mini 3', 'mini 4', 'mavic', 'air', 'phantom', 'inspire', 'fpv', 'avata',
     # Graphics cards & PC parts
     'rtx', 'gtx', 'graphics card', 'gpu', 'nvidia', 'amd', 'radeon',
     'air quality', 'dylos',
@@ -110,6 +110,7 @@ CRITICAL_EXCLUSIONS_DESC = [
     'smashed', 'shattered',
     'locked', 'password protected', 'can\'t access', 'cannot access',
     'stolen', 'lost property', 'found',
+    'fly away', 'flyaway', 'lost drone', 'crashed',
 ]
 
 # GOOD INDICATORS in description (bonus points, but not required)
@@ -119,76 +120,16 @@ GOOD_INDICATORS = [
     'full working', 'fully working', 'perfect working', 'works perfectly',
     'original box', 'boxed', 'box included', 'with box',
     'warranty', 'receipt', 'proof of purchase',
-    'charger included', 'battery included', 'accessories included',
+    'charger included', 'battery included', 'batteries included', 'accessories included',
     'no scratches', 'scratch free', 'immaculate',
+    'fly more combo', 'combo', 'extra batteries',
 ]
 
-# Product specifications with buy prices
+# Product specifications with buy prices - ONLY DJI MINI 2 MODELS
 PRODUCT_SPECS = {
-    # === CAMERAS ===
-    # Canon
-    'canon eos r5': {'max_buy': 1400.0, 'target_list': 2200.0, 'min_profit': 600.0},
-    'canon eos r6': {'max_buy': 900.0, 'target_list': 1500.0, 'min_profit': 450.0},
-    'canon eos r': {'max_buy': 600.0, 'target_list': 1000.0, 'min_profit': 300.0},
-    'canon eos 5d mark iv': {'max_buy': 700.0, 'target_list': 1200.0, 'min_profit': 350.0},
-    'canon eos 6d mark ii': {'max_buy': 450.0, 'target_list': 800.0, 'min_profit': 250.0},
-    'canon eos 90d': {'max_buy': 500.0, 'target_list': 850.0, 'min_profit': 250.0},
-    'canon eos m50': {'max_buy': 200.0, 'target_list': 400.0, 'min_profit': 150.0},
-    
-    # Sony
-    'sony a7iii': {'max_buy': 800.0, 'target_list': 1300.0, 'min_profit': 400.0},
-    'sony a7 iii': {'max_buy': 800.0, 'target_list': 1300.0, 'min_profit': 400.0},
-    'sony a7iv': {'max_buy': 1200.0, 'target_list': 1900.0, 'min_profit': 500.0},
-    'sony a7 iv': {'max_buy': 1200.0, 'target_list': 1900.0, 'min_profit': 500.0},
-    'sony a7siii': {'max_buy': 1600.0, 'target_list': 2500.0, 'min_profit': 650.0},
-    'sony a7s iii': {'max_buy': 1600.0, 'target_list': 2500.0, 'min_profit': 650.0},
-    'sony a7riv': {'max_buy': 1400.0, 'target_list': 2200.0, 'min_profit': 600.0},
-    'sony a7r iv': {'max_buy': 1400.0, 'target_list': 2200.0, 'min_profit': 600.0},
-    'sony a6400': {'max_buy': 400.0, 'target_list': 700.0, 'min_profit': 220.0},
-    'sony a6600': {'max_buy': 550.0, 'target_list': 950.0, 'min_profit': 300.0},
-    'sony zv-e10': {'max_buy': 350.0, 'target_list': 600.0, 'min_profit': 180.0},
-    'sony zv-1': {'max_buy': 300.0, 'target_list': 550.0, 'min_profit': 180.0},
-    
-    # Nikon
-    'nikon z6': {'max_buy': 650.0, 'target_list': 1100.0, 'min_profit': 330.0},
-    'nikon z6 ii': {'max_buy': 850.0, 'target_list': 1400.0, 'min_profit': 400.0},
-    'nikon z7': {'max_buy': 850.0, 'target_list': 1400.0, 'min_profit': 400.0},
-    'nikon z7 ii': {'max_buy': 1100.0, 'target_list': 1800.0, 'min_profit': 500.0},
-    'nikon d850': {'max_buy': 950.0, 'target_list': 1600.0, 'min_profit': 480.0},
-    'nikon d750': {'max_buy': 400.0, 'target_list': 700.0, 'min_profit': 220.0},
-    
-    # Fujifilm
-    'fujifilm xt4': {'max_buy': 700.0, 'target_list': 1150.0, 'min_profit': 340.0},
-    'fujifilm x-t4': {'max_buy': 700.0, 'target_list': 1150.0, 'min_profit': 340.0},
-    'fujifilm xt3': {'max_buy': 450.0, 'target_list': 800.0, 'min_profit': 250.0},
-    'fujifilm x-t3': {'max_buy': 450.0, 'target_list': 800.0, 'min_profit': 250.0},
-    'fujifilm xs10': {'max_buy': 400.0, 'target_list': 700.0, 'min_profit': 220.0},
-    'fujifilm x-s10': {'max_buy': 400.0, 'target_list': 700.0, 'min_profit': 220.0},
-    
-    # GoPro
-    'gopro hero 11': {'max_buy': 180.0, 'target_list': 320.0, 'min_profit': 100.0},
-    'gopro hero 10': {'max_buy': 140.0, 'target_list': 260.0, 'min_profit': 85.0},
-    'gopro hero 9': {'max_buy': 100.0, 'target_list': 200.0, 'min_profit': 70.0},
-    
-    # DJI Cameras/Gimbals
-    'dji osmo pocket': {'max_buy': 100.0, 'target_list': 200.0, 'min_profit': 70.0},
-    'dji osmo pocket 2': {'max_buy': 140.0, 'target_list': 260.0, 'min_profit': 85.0},
-    'dji pocket 2': {'max_buy': 140.0, 'target_list': 260.0, 'min_profit': 85.0},
-    'dji ronin': {'max_buy': 200.0, 'target_list': 400.0, 'min_profit': 140.0},
-    
-    # === DRONES ===
-    'dji mini 3 pro': {'max_buy': 300.0, 'target_list': 550.0, 'min_profit': 180.0},
-    'dji mini 3': {'max_buy': 220.0, 'target_list': 420.0, 'min_profit': 140.0},
-    'dji mini 2': {'max_buy': 150.0, 'target_list': 300.0, 'min_profit': 105.0},
-    'dji mavic 3': {'max_buy': 800.0, 'target_list': 1350.0, 'min_profit': 400.0},
-    'dji mavic 3 pro': {'max_buy': 1000.0, 'target_list': 1700.0, 'min_profit': 500.0},
-    'dji mavic 2 pro': {'max_buy': 400.0, 'target_list': 700.0, 'min_profit': 220.0},
-    'dji mavic 2 zoom': {'max_buy': 350.0, 'target_list': 600.0, 'min_profit': 180.0},
-    'dji mavic air 2': {'max_buy': 250.0, 'target_list': 450.0, 'min_profit': 150.0},
-    'dji mavic air 2s': {'max_buy': 350.0, 'target_list': 600.0, 'min_profit': 180.0},
-    'dji air 2s': {'max_buy': 350.0, 'target_list': 600.0, 'min_profit': 180.0},
-    'dji fpv': {'max_buy': 300.0, 'target_list': 550.0, 'min_profit': 180.0},
-    'dji avata': {'max_buy': 250.0, 'target_list': 450.0, 'min_profit': 150.0},
+    # === DJI MINI 2 DRONES ONLY ===
+    'dji mini 2': {'max_buy': 180.0, 'target_list': 350.0, 'min_profit': 120.0},
+    'dji mini 2 se': {'max_buy': 140.0, 'target_list': 280.0, 'min_profit': 100.0},
 }
 
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "https://discordapp.com/api/webhooks/1422243737261707382/aoFqRx4rpIaplAGL96W8r19iCLrucHCt7gbdmK2hLzXP9q9QZO3pGJAi9OBqW1Ghunaz")
@@ -278,22 +219,23 @@ def has_critical_exclusion_in_title(title: str) -> Tuple[bool, Optional[str]]:
             return True, term
     return False, None
 
-def has_required_camera_keywords(title: str, product_name: str) -> bool:
-    """Check if title contains required camera/drone brand keywords"""
+def has_required_drone_keywords(title: str, product_name: str) -> bool:
+    """Check if title contains required DJI Mini 2 keywords"""
     title_lower = title.lower()
     product_lower = product_name.lower()
     
-    # Extract brand from product name
-    camera_brands = ['canon', 'sony', 'nikon', 'fujifilm', 'gopro', 'dji']
+    # Must have DJI
+    if 'dji' not in title_lower:
+        return False
     
-    # Check if any camera brand is in the title
-    for brand in camera_brands:
-        if brand in product_lower and brand in title_lower:
-            return True
+    # Must have Mini or Mini 2
+    if 'mini 2' not in title_lower and 'mini2' not in title_lower:
+        if 'mini' not in title_lower:
+            return False
     
-    # For DJI products, be extra strict
-    if 'dji' in product_lower:
-        if 'dji' not in title_lower and 'mavic' not in title_lower and 'mini' not in title_lower:
+    # If looking for SE specifically, check for SE
+    if 'se' in product_lower:
+        if 'se' not in title_lower:
             return False
     
     return True
@@ -407,7 +349,7 @@ async def send_discord_notification(item_data: dict):
             description_preview = description_preview[:200] + "..."
         
         embed = {
-            "title": f"📸 {item_data['product_name'].upper()}",
+            "title": f"🚁 {item_data['product_name'].upper()}",
             "description": f"**{item_data['title']}**",
             "color": color,
             "fields": [
@@ -445,7 +387,7 @@ async def send_discord_notification(item_data: dict):
             "url": item_data['url'],
             "thumbnail": {"url": item_data['photo_url']} if item_data.get('photo_url') else None,
             "footer": {
-                "text": f"Camera & DJ Bot • {datetime.utcnow().strftime('%H:%M:%S UTC')}"
+                "text": f"DJI Drones Bot • {datetime.utcnow().strftime('%H:%M:%S UTC')}"
             },
             "timestamp": datetime.utcnow().isoformat()
         }
@@ -482,7 +424,7 @@ async def run_scan_cycle():
         return
     
     logger.info(f"\n{'='*60}")
-    logger.info(f"🚀 STARTING SCAN CYCLE - Camera & DJ Bot")
+    logger.info(f"🚁 STARTING SCAN CYCLE - DJI Drones Bot")
     logger.info(f"{'='*60}")
     logger.info(f"🕐 Started: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}")
     logger.info(f"📦 Processing: {len(queries)} products")
@@ -572,12 +514,14 @@ async def run_scan_cycle():
                     if has_exclusion:
                         logger.info(f"      ❌ Title filter: '{term}'")
                         product_filtered += 1
+                        cycle_stats['filtered_title'] += 1
                         continue
                     
-                    # Step 1.5: Check for required brand keywords
-                    if not has_required_camera_keywords(item.title, name):
-                        logger.info(f"      ❌ Missing brand keyword")
+                    # Step 1.5: Check for required drone keywords
+                    if not has_required_drone_keywords(item.title, name):
+                        logger.info(f"      ❌ Missing required DJI Mini 2 keywords")
                         product_filtered += 1
+                        cycle_stats['filtered_title'] += 1
                         continue
                     
                     logger.info(f"      ✅ Title filter passed")
@@ -716,7 +660,7 @@ async def run_scan_cycle():
         logger.info(f"✅ Database updated")
         
         logger.info(f"\n{'='*60}")
-        logger.info(f"📊 CYCLE COMPLETE - Camera & DJ Bot")
+        logger.info(f"📊 CYCLE COMPLETE - DJI Drones Bot")
         logger.info(f"{'='*60}")
         logger.info(f"🕐 Completed: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}")
         logger.info(f"")
@@ -740,287 +684,4 @@ async def scheduler():
         try:
             await run_scan_cycle()
         except Exception as e:
-            logger.error(f"❌ Scheduler error: {e}")
-            import traceback
-            logger.error(traceback.format_exc())
-        
-        logger.info(f"💤 Waiting {CYCLE_INTERVAL}s before next cycle...\n")
-        await asyncio.sleep(CYCLE_INTERVAL)
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize on startup"""
-    logger.info("\n" + "="*60)
-    logger.info("📸 CAMERA & DJ BOT STARTING")
-    logger.info("="*60)
-    
-    init_database()
-    await create_search_queries()
-    
-    logger.info(f"\n⚙️  BOT 3 CONFIGURATION:")
-    logger.info(f"   📸 Specialty: Cameras & Drones")
-    logger.info(f"   🎯 Products tracked: {len(PRODUCT_SPECS)}")
-    logger.info(f"   🔍 Pages per product: {MAX_PAGES_PER_SEARCH}")
-    logger.info(f"   📦 Items per product: ~{MAX_PAGES_PER_SEARCH * ITEMS_PER_PAGE}")
-    logger.info(f"   🔄 Products per cycle: {MAX_PRODUCTS_PER_CYCLE}")
-    logger.info(f"   ⏱️  Cycle time: {CYCLE_INTERVAL//60} minutes")
-    logger.info(f"   🎯 Full rotation: ~{(len(PRODUCT_SPECS) // MAX_PRODUCTS_PER_CYCLE) * (CYCLE_INTERVAL//60)} minutes")
-    logger.info(f"   🔍 Description scraping: ✅ ENABLED")
-    logger.info(f"   ⭐ Quality scoring: ✅ ENABLED")
-    logger.info(f"="*60 + "\n")
-    
-    asyncio.create_task(scheduler())
-
-@app.get("/", response_class=HTMLResponse)
-async def home():
-    """Bot dashboard"""
-    conn = sqlite3.connect(DATABASE_FILE)
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT COUNT(*) FROM tracked_items")
-    total_items = cursor.fetchone()[0]
-    
-    cursor.execute("SELECT COUNT(*) FROM tracked_items WHERE passed_title_filter = TRUE")
-    passed_title = cursor.fetchone()[0]
-    
-    cursor.execute("SELECT COUNT(*) FROM tracked_items WHERE passed_desc_filter = TRUE")
-    passed_desc = cursor.fetchone()[0]
-    
-    cursor.execute("SELECT SUM(profit) FROM tracked_items")
-    total_profit = cursor.fetchone()[0] or 0
-    
-    cursor.execute("""
-        SELECT name, COUNT(tracked_items.id) as count
-        FROM search_queries
-        LEFT JOIN tracked_items ON search_queries.id = tracked_items.search_query_id
-        WHERE search_queries.enabled = TRUE
-        GROUP BY search_queries.id
-        ORDER BY count DESC
-        LIMIT 10
-    """)
-    top_products = cursor.fetchall()
-    
-    cursor.execute("""
-        SELECT title, price, url, profit, notified_at
-        FROM tracked_items
-        ORDER BY notified_at DESC
-        LIMIT 20
-    """)
-    recent_items = cursor.fetchall()
-    
-    conn.close()
-    
-    html = f"""
-    <html>
-        <head>
-            <title>Camera & DJ Bot Dashboard</title>
-            <meta http-equiv="refresh" content="60">
-            <style>
-                body {{ 
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                    min-height: 100vh; 
-                    padding: 20px; 
-                    margin: 0;
-                }}
-                .container {{ 
-                    max-width: 1200px; 
-                    margin: 0 auto; 
-                    background: white; 
-                    padding: 40px; 
-                    border-radius: 20px; 
-                    box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
-                }}
-                h1 {{ 
-                    color: #333; 
-                    font-size: 42px; 
-                    margin-bottom: 10px; 
-                    display: flex;
-                    align-items: center;
-                    gap: 15px;
-                }}
-                .subtitle {{ 
-                    color: #666; 
-                    font-size: 18px; 
-                    margin-bottom: 30px; 
-                }}
-                .stats {{ 
-                    display: grid; 
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-                    gap: 20px; 
-                    margin: 30px 0; 
-                }}
-                .stat {{ 
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                    padding: 25px; 
-                    border-radius: 15px; 
-                    color: white; 
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                }}
-                .stat-value {{ 
-                    font-size: 36px; 
-                    font-weight: bold; 
-                    margin: 10px 0; 
-                }}
-                .stat-label {{ 
-                    font-size: 14px; 
-                    opacity: 0.9; 
-                }}
-                .section {{ 
-                    margin: 30px 0; 
-                    background: #f8f9fa; 
-                    padding: 25px; 
-                    border-radius: 15px; 
-                }}
-                .section h2 {{ 
-                    color: #333; 
-                    margin-top: 0; 
-                    font-size: 24px;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }}
-                table {{ 
-                    width: 100%; 
-                    border-collapse: collapse; 
-                    margin-top: 15px; 
-                }}
-                th {{ 
-                    background: #667eea; 
-                    color: white; 
-                    padding: 12px; 
-                    text-align: left; 
-                    font-weight: 600;
-                }}
-                td {{ 
-                    padding: 12px; 
-                    border-bottom: 1px solid #ddd; 
-                }}
-                tr:hover {{ 
-                    background: #f0f0f0; 
-                }}
-                .deal-item {{ 
-                    background: white; 
-                    padding: 15px; 
-                    margin: 10px 0; 
-                    border-radius: 10px; 
-                    border-left: 4px solid #667eea;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                }}
-                .deal-title {{ 
-                    font-weight: bold; 
-                    color: #333; 
-                    margin-bottom: 8px;
-                }}
-                .deal-info {{ 
-                    color: #666; 
-                    font-size: 14px;
-                    display: flex;
-                    gap: 20px;
-                    flex-wrap: wrap;
-                }}
-                .profit-positive {{ 
-                    color: #00a86b; 
-                    font-weight: bold; 
-                }}
-                a {{ 
-                    color: #667eea; 
-                    text-decoration: none; 
-                }}
-                a:hover {{ 
-                    text-decoration: underline; 
-                }}
-                .status {{ 
-                    display: inline-block; 
-                    padding: 4px 12px; 
-                    background: #00a86b; 
-                    color: white; 
-                    border-radius: 12px; 
-                    font-size: 12px; 
-                    font-weight: bold;
-                }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>
-                    <span>📸</span> Camera & DJ Bot
-                </h1>
-                <div class="subtitle">
-                    <span class="status">● LIVE</span>
-                    Tracking {len(PRODUCT_SPECS)} premium cameras and drones • Auto-refresh every 60s
-                </div>
-                
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-label">💎 Total Deals Found</div>
-                        <div class="stat-value">{total_items}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">✅ Title Filter Pass</div>
-                        <div class="stat-value">{passed_title}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">📝 Description Pass</div>
-                        <div class="stat-value">{passed_desc}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">💰 Total Profit Potential</div>
-                        <div class="stat-value">£{total_profit:,.0f}</div>
-                    </div>
-                </div>
-                
-                <div class="section">
-                    <h2>🏆 Top Products</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Product</th>
-                                <th>Deals Found</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {''.join(f'<tr><td>{name}</td><td>{count}</td></tr>' for name, count in top_products)}
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="section">
-                    <h2>🔥 Recent Deals (Last 20)</h2>
-                    <div>
-                        {''.join(f'''
-                            <div class="deal-item">
-                                <div class="deal-title">{title}</div>
-                                <div class="deal-info">
-                                    <span>💰 £{price:.2f}</span>
-                                    <span class="profit-positive">📈 +£{profit:.2f} profit</span>
-                                    <span>🕐 {notified_at.split('T')[1][:8]}</span>
-                                    <span><a href="{url}" target="_blank">🔗 View Listing</a></span>
-                                </div>
-                            </div>
-                        ''' for title, price, url, profit, notified_at in recent_items) if recent_items else '<p style="padding: 20px; text-align: center; color: #999;">No deals yet...</p>'}
-                    </div>
-                </div>
-            </div>
-        </body>
-    </html>
-    """
-    return HTMLResponse(content=html)
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "bot": "camera_dj_pro",
-        "products_tracked": len(PRODUCT_SPECS),
-        "scan_interval": CYCLE_INTERVAL,
-        "description_scraping": True,
-        "quality_scoring": True,
-        "timestamp": datetime.now().isoformat()
-    }
-
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
+            logger.error(f"❌
