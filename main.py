@@ -17,15 +17,21 @@ import httpx
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from bs4 import BeautifulSoup
+import uvicorn
 
 try:
     from vinted_scraper import AsyncVintedScraper
+    VINTED_AVAILABLE = True
 except ImportError:
-    print("Warning: vinted_scraper not installed")
+    VINTED_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning("⚠️ vinted_scraper not installed - using mock mode")
+    
     class AsyncVintedScraper:
         def __init__(self, baseurl):
             self.baseurl = baseurl
         async def search(self, params):
+            logger.warning("⚠️ Mock mode - no real scraping")
             return []
 
 # Enhanced logging configuration
@@ -40,16 +46,17 @@ app = FastAPI(title="DJI Drones Bot")
 DATABASE_FILE = "dji_drones_bot.db"
 
 # Configuration
-MAX_PAGES_PER_SEARCH = 20
-ITEMS_PER_PAGE = 40
-PAGE_DELAY = 4
-PRODUCT_DELAY = 12
-CYCLE_INTERVAL = 900
-MAX_PRODUCTS_PER_CYCLE = 2  # Only 2 products now
+MAX_PAGES_PER_SEARCH = 50  # Deep scan - 50 pages
+ITEMS_PER_PAGE = 96  # Maximum items per page
+PAGE_DELAY = 3  # Faster page delays
+PRODUCT_DELAY = 8  # Shorter delay between products
+CYCLE_INTERVAL = 600  # 10 minutes between cycles (more frequent)
+MAX_PRODUCTS_PER_CYCLE = 2  # Only 2 products - scan both each time
 RETRY_DELAY = 30
 MAX_RETRIES = 2
 SESSION_RESET_DELAY = 60
-SCRAPE_DELAY = 3
+SCRAPE_DELAY = 2  # Faster scraping
+MIN_SELLER_REVIEWS = 1  # Require at least 1 review (filter out 0 reviews)
 
 # CRITICAL EXCLUSIONS - Always filter these (for TITLE filtering)
 CRITICAL_EXCLUSIONS_TITLE = [
@@ -542,6 +549,13 @@ async def run_scan_cycle():
                     else:
                         logger.info(f"      ⚠️  Could not fetch seller reviews")
                     
+                    # Step 2.5: Filter out sellers with 0 reviews
+                    if review_count is not None and review_count < MIN_SELLER_REVIEWS:
+                        logger.info(f"      ❌ Seller has {review_count} reviews (minimum: {MIN_SELLER_REVIEWS})")
+                        cycle_stats['filtered_desc'] += 1
+                        product_filtered += 1
+                        continue
+                    
                     # Step 3: Description filter
                     if description:
                         has_exclusion, term = has_critical_exclusion_in_description(description)
@@ -684,4 +698,296 @@ async def scheduler():
         try:
             await run_scan_cycle()
         except Exception as e:
-            logger.error(f"❌
+            logger.error(f"❌ Scheduler error: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+        
+        logger.info(f"💤 Waiting {CYCLE_INTERVAL}s before next cycle...\n")
+        await asyncio.sleep(CYCLE_INTERVAL)
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize on startup"""
+    logger.info("\n" + "="*60)
+    logger.info("🚁 DJI DRONES BOT STARTING")
+    logger.info("="*60)
+    
+    if not VINTED_AVAILABLE:
+        logger.warning("⚠️ WARNING: vinted_scraper not installed!")
+        logger.warning("⚠️ Install with: pip install vinted-scraper")
+    
+    init_database()
+    await create_search_queries()
+    
+    logger.info(f"\n⚙️  DJI DRONES BOT CONFIGURATION:")
+    logger.info(f"   🚁 Specialty: DJI Mini 2 & Mini 2 SE Only")
+    logger.info(f"   🎯 Products tracked: {len(PRODUCT_SPECS)}")
+    logger.info(f"   🔍 Pages per product: {MAX_PAGES_PER_SEARCH} (DEEP SCAN)")
+    logger.info(f"   📦 Max items per product: ~{MAX_PAGES_PER_SEARCH * ITEMS_PER_PAGE:,}")
+    logger.info(f"   🔄 Products per cycle: {MAX_PRODUCTS_PER_CYCLE} (ALL)")
+    logger.info(f"   ⏱️  Cycle time: {CYCLE_INTERVAL//60} minutes (FREQUENT)")
+    logger.info(f"   💰 DJI Mini 2 max buy: £180")
+    logger.info(f"   💰 DJI Mini 2 SE max buy: £140")
+    logger.info(f"   ⭐ Min seller reviews: {MIN_SELLER_REVIEWS}")
+    logger.info(f"   🔍 Description scraping: ✅ ENABLED")
+    logger.info(f"   ⭐ Quality scoring: ✅ ENABLED")
+    logger.info(f"   🔌 Vinted scraper: {'✅ AVAILABLE' if VINTED_AVAILABLE else '❌ NOT INSTALLED'}")
+    logger.info(f"="*60 + "\n")
+    
+    # Start scheduler
+    asyncio.create_task(scheduler())
+
+@app.get("/", response_class=HTMLResponse)
+async def home():
+    """Bot dashboard"""
+    conn = sqlite3.connect(DATABASE_FILE)
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT COUNT(*) FROM tracked_items")
+    total_items = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM tracked_items WHERE passed_title_filter = TRUE")
+    passed_title = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT COUNT(*) FROM tracked_items WHERE passed_desc_filter = TRUE")
+    passed_desc = cursor.fetchone()[0]
+    
+    cursor.execute("SELECT SUM(profit) FROM tracked_items")
+    total_profit = cursor.fetchone()[0] or 0
+    
+    cursor.execute("""
+        SELECT name, COUNT(tracked_items.id) as count
+        FROM search_queries
+        LEFT JOIN tracked_items ON search_queries.id = tracked_items.search_query_id
+        WHERE search_queries.enabled = TRUE
+        GROUP BY search_queries.id
+        ORDER BY count DESC
+        LIMIT 10
+    """)
+    top_products = cursor.fetchall()
+    
+    cursor.execute("""
+        SELECT title, price, url, profit, notified_at
+        FROM tracked_items
+        ORDER BY notified_at DESC
+        LIMIT 20
+    """)
+    recent_items = cursor.fetchall()
+    
+    conn.close()
+    
+    html = f"""
+    <html>
+        <head>
+            <title>DJI Drones Bot Dashboard</title>
+            <meta http-equiv="refresh" content="60">
+            <style>
+                body {{ 
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    min-height: 100vh; 
+                    padding: 20px; 
+                    margin: 0;
+                }}
+                .container {{ 
+                    max-width: 1200px; 
+                    margin: 0 auto; 
+                    background: white; 
+                    padding: 40px; 
+                    border-radius: 20px; 
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3); 
+                }}
+                h1 {{ 
+                    color: #333; 
+                    font-size: 42px; 
+                    margin-bottom: 10px; 
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                }}
+                .subtitle {{ 
+                    color: #666; 
+                    font-size: 18px; 
+                    margin-bottom: 30px; 
+                }}
+                .stats {{ 
+                    display: grid; 
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+                    gap: 20px; 
+                    margin: 30px 0; 
+                }}
+                .stat {{ 
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    padding: 25px; 
+                    border-radius: 15px; 
+                    color: white; 
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                }}
+                .stat-value {{ 
+                    font-size: 36px; 
+                    font-weight: bold; 
+                    margin: 10px 0; 
+                }}
+                .stat-label {{ 
+                    font-size: 14px; 
+                    opacity: 0.9; 
+                }}
+                .section {{ 
+                    margin: 30px 0; 
+                    background: #f8f9fa; 
+                    padding: 25px; 
+                    border-radius: 15px; 
+                }}
+                .section h2 {{ 
+                    color: #333; 
+                    margin-top: 0; 
+                    font-size: 24px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }}
+                table {{ 
+                    width: 100%; 
+                    border-collapse: collapse; 
+                    margin-top: 15px; 
+                }}
+                th {{ 
+                    background: #667eea; 
+                    color: white; 
+                    padding: 12px; 
+                    text-align: left; 
+                    font-weight: 600;
+                }}
+                td {{ 
+                    padding: 12px; 
+                    border-bottom: 1px solid #ddd; 
+                }}
+                tr:hover {{ 
+                    background: #f0f0f0; 
+                }}
+                .deal-item {{ 
+                    background: white; 
+                    padding: 15px; 
+                    margin: 10px 0; 
+                    border-radius: 10px; 
+                    border-left: 4px solid #667eea;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }}
+                .deal-title {{ 
+                    font-weight: bold; 
+                    color: #333; 
+                    margin-bottom: 8px;
+                }}
+                .deal-info {{ 
+                    color: #666; 
+                    font-size: 14px;
+                    display: flex;
+                    gap: 20px;
+                    flex-wrap: wrap;
+                }}
+                .profit-positive {{ 
+                    color: #00a86b; 
+                    font-weight: bold; 
+                }}
+                a {{ 
+                    color: #667eea; 
+                    text-decoration: none; 
+                }}
+                a:hover {{ 
+                    text-decoration: underline; 
+                }}
+                .status {{ 
+                    display: inline-block; 
+                    padding: 4px 12px; 
+                    background: #00a86b; 
+                    color: white; 
+                    border-radius: 12px; 
+                    font-size: 12px; 
+                    font-weight: bold;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>
+                    <span>🚁</span> DJI Drones Bot
+                </h1>
+                <div class="subtitle">
+                    <span class="status">● LIVE</span>
+                    Tracking DJI Mini 2 & Mini 2 SE • Deep scan: 50 pages • Cycle: 10 min • Min reviews: 1 • Auto-refresh: 60s
+                </div>
+                
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-label">💎 Total Deals Found</div>
+                        <div class="stat-value">{total_items}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">✅ Title Filter Pass</div>
+                        <div class="stat-value">{passed_title}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">📝 Description Pass</div>
+                        <div class="stat-value">{passed_desc}</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">💰 Total Profit Potential</div>
+                        <div class="stat-value">£{total_profit:,.0f}</div>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>🏆 Top Products</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Deals Found</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {''.join(f'<tr><td>{name}</td><td>{count}</td></tr>' for name, count in top_products)}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="section">
+                    <h2>🔥 Recent Deals (Last 20)</h2>
+                    <div>
+                        {''.join(f'''
+                            <div class="deal-item">
+                                <div class="deal-title">{title}</div>
+                                <div class="deal-info">
+                                    <span>💰 £{price:.2f}</span>
+                                    <span class="profit-positive">📈 +£{profit:.2f} profit</span>
+                                    <span>🕐 {notified_at.split('T')[1][:8]}</span>
+                                    <span><a href="{url}" target="_blank">🔗 View Listing</a></span>
+                                </div>
+                            </div>
+                        ''' for title, price, url, profit, notified_at in recent_items) if recent_items else '<p style="padding: 20px; text-align: center; color: #999;">No deals yet...</p>'}
+                    </div>
+                </div>
+            </div>
+        </body>
+    </html>
+    """
+    return HTMLResponse(content=html)
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "bot": "dji_drones",
+        "products_tracked": len(PRODUCT_SPECS),
+        "scan_interval": CYCLE_INTERVAL,
+        "description_scraping": True,
+        "quality_scoring": True,
+        "timestamp": datetime.now().isoformat()
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    logger.info(f"🚀 Starting server on port {port}")
+    uvicorn.run("main:app", host="0.0.0.0", port=port, log_level="info")
