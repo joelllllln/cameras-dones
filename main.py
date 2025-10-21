@@ -135,8 +135,19 @@ GOOD_INDICATORS = [
 # Product specifications with buy prices - ONLY DJI MINI 2 MODELS
 PRODUCT_SPECS = {
     # === DJI MINI 2 DRONES ONLY ===
-    'dji mini 2': {'max_buy': 180.0, 'target_list': 350.0, 'min_profit': 120.0},
-    'dji mini 2 se': {'max_buy': 140.0, 'target_list': 280.0, 'min_profit': 100.0},
+    # Use more specific search terms to reduce garbage results
+    'dji mini 2': {
+        'max_buy': 180.0, 
+        'target_list': 350.0, 
+        'min_profit': 120.0,
+        'search_terms': ['dji mini 2 drone', 'dji mini2 drone', 'mini 2 drone']  # Multiple search variations
+    },
+    'dji mini 2 se': {
+        'max_buy': 140.0, 
+        'target_list': 280.0, 
+        'min_profit': 100.0,
+        'search_terms': ['dji mini 2 se', 'dji mini2 se', 'mini 2 se drone']  # Multiple search variations
+    },
 }
 
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "https://discordapp.com/api/webhooks/1422243737261707382/aoFqRx4rpIaplAGL96W8r19iCLrucHCt7gbdmK2hLzXP9q9QZO3pGJAi9OBqW1Ghunaz")
@@ -195,6 +206,10 @@ async def create_search_queries():
         target_list = pricing['target_list']
         min_profit = pricing['min_profit']
         
+        # Use the first search term as primary
+        search_terms = pricing.get('search_terms', [product_name])
+        primary_search_term = search_terms[0]
+        
         # Price range: 5% below min profit point to max buy price
         min_price_threshold = max_buy - min_profit
         price_from = max(min_price_threshold * 0.95, 1.0)
@@ -206,7 +221,7 @@ async def create_search_queries():
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """, (
             product_name,
-            product_name,
+            primary_search_term,
             price_from,
             price_to,
             target_list,
@@ -474,7 +489,9 @@ async def run_scan_cycle():
                         "price_from": price_from,
                         "price_to": price_to,
                         "per_page": ITEMS_PER_PAGE,
-                        "page": page
+                        "page": page,
+                        "catalog_ids": "1652",  # Electronics category
+                        "order": "newest_first"  # Get newest listings first
                     }
                     
                     items = await scraper.search(params=search_params)
