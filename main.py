@@ -490,8 +490,7 @@ async def run_scan_cycle():
                         "price_to": price_to,
                         "per_page": ITEMS_PER_PAGE,
                         "page": page,
-                        "catalog_ids": "1652",  # Electronics category
-                        "order": "newest_first"  # Get newest listings first
+                        "order": "newest_first"
                     }
                     
                     items = await scraper.search(params=search_params)
